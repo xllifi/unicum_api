@@ -1,7 +1,8 @@
-use std::collections::HashMap;
+use async_trait::async_trait;
 
-use crate::entities::{Error, MachineId, Sales, SetStockTarget, SlotId, State, Stock};
+use crate::entities::{Error, MachineId, Sales, SetStockTarget, State, Stock};
 
+#[async_trait]
 pub trait Contracts {
     async fn get_state(&mut self, machine_id: MachineId) -> Result<State, Error>;
     async fn get_sales(&mut self, machine_id: MachineId, since: i64, before: i64) -> Result<Sales, Error>;

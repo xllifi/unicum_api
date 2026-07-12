@@ -1,5 +1,6 @@
 use std::thread::sleep;
 
+use async_trait::async_trait;
 use reqwest::{Client, RequestBuilder};
 use serde::{Deserialize, Serialize};
 use time::{Duration, OffsetDateTime};
@@ -106,6 +107,7 @@ impl UnicumApi {
     }
 }
 
+#[async_trait]
 impl Contracts for UnicumApi {
     async fn get_state(&mut self, machine_id: MachineId) -> Result<State, Error> {
         self.get_state(machine_id).await.map_err(|e| e.into())
