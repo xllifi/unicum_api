@@ -1,14 +1,7 @@
-use std::{
-    ffi::OsString,
-    fs,
-    net::Ipv4Addr,
-    path::PathBuf,
-    process::exit,
-    sync::LazyLock,
-};
+use std::{ffi::OsString, fs, net::Ipv4Addr, path::PathBuf, process::exit, sync::LazyLock};
 
 use axum::{
-    Extension, Json, Router, extract::Request, http::HeaderMap, middleware::Next, response::Response, routing::{get, post},
+    Extension, Json, Router, extract::Request, middleware::Next, response::Response, routing::post,
 };
 use clap::{Parser, Subcommand};
 use colored::Colorize;
@@ -16,7 +9,7 @@ use fern::{
     Dispatch,
     colors::{Color, ColoredLevelConfig},
 };
-use log::{LevelFilter, debug, error, info};
+use log::{LevelFilter, error, info};
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 use sqlx::{PgPool, postgres::PgPoolOptions};
@@ -24,7 +17,11 @@ use time::macros::format_description;
 use uuid::Uuid;
 
 use crate::{
-    contracts::Contracts, entities::{Permissions, Stock}, outbound::official::UnicumApi, state::get_state_dir, user_mgmt::{RequirePermissions, require_auth, useradd, userdel},
+    contracts::Contracts,
+    entities::{Permissions, Stock},
+    outbound::official::UnicumApi,
+    state::get_state_dir,
+    user_mgmt::{RequirePermissions, require_auth, useradd, userdel},
 };
 
 mod contracts;
@@ -42,10 +39,10 @@ pub const ENV_SALT_B64: LazyLock<EnvVar<String>> = LazyLock::new(|| {
     let var = load_runtime_env("SALT_B64");
     if let Some(value) = var.value {
         if let Some(value) = value.to_str() {
-            return EnvVar {
+            EnvVar {
                 name: var.name,
                 value: value.to_string(),
-            };
+            }
         } else {
             error!("{ENV_PREFIX}_SALT_B64 env variable's value must be a valid base64 string.");
             exit(2);
@@ -59,10 +56,10 @@ pub const ENV_POSTGRES_URL: LazyLock<EnvVar<String>> = LazyLock::new(|| {
     let var = load_runtime_env("POSTGRES_URL");
     if let Some(value) = var.value {
         if let Some(value) = value.to_str() {
-            return EnvVar {
+            EnvVar {
                 name: var.name,
                 value: value.to_string(),
-            };
+            }
         } else {
             error!("{ENV_PREFIX}_POSTGRES_URL env variable's value must be a valid ASCII string.");
             exit(2);
@@ -77,12 +74,14 @@ pub const ENV_UNICUM_USERNAME: LazyLock<EnvVar<String>> = LazyLock::new(|| {
     let var = load_runtime_env("UNICUM_USERNAME");
     if let Some(value) = var.value {
         if let Some(value) = value.to_str() {
-            return EnvVar {
+            EnvVar {
                 name: var.name,
                 value: value.to_string(),
-            };
+            }
         } else {
-            error!("{ENV_PREFIX}_UNICUM_USERNAME env variable's value must be a valid ASCII string.");
+            error!(
+                "{ENV_PREFIX}_UNICUM_USERNAME env variable's value must be a valid ASCII string."
+            );
             exit(2);
         }
     } else {
@@ -94,12 +93,14 @@ pub const ENV_UNICUM_PASSWORD: LazyLock<EnvVar<String>> = LazyLock::new(|| {
     let var = load_runtime_env("UNICUM_PASSWORD");
     if let Some(value) = var.value {
         if let Some(value) = value.to_str() {
-            return EnvVar {
+            EnvVar {
                 name: var.name,
                 value: value.to_string(),
-            };
+            }
         } else {
-            error!("{ENV_PREFIX}_UNICUM_PASSWORD env variable's value must be a valid ASCII string.");
+            error!(
+                "{ENV_PREFIX}_UNICUM_PASSWORD env variable's value must be a valid ASCII string."
+            );
             exit(2);
         }
     } else {
@@ -253,7 +254,10 @@ async fn init_db() -> PgPool {
 }
 
 async fn listen(port: u16, ip: Ipv4Addr, pg_pool: PgPool) {
-    let unicum_api = UnicumApi::new(ENV_UNICUM_USERNAME.value.clone(), ENV_UNICUM_PASSWORD.value.clone());
+    let unicum_api = UnicumApi::new(
+        ENV_UNICUM_USERNAME.value.clone(),
+        ENV_UNICUM_PASSWORD.value.clone(),
+    );
 
     let app = Router::new()
         .route("/get_stock", post(get_stock))
@@ -281,15 +285,18 @@ async fn get_stock(
     Extension(mut unicum_api): Extension<UnicumApi>,
     Json(payload): Json<GetStockRequest>,
 ) -> Result<Json<Stock>, StatusCode> {
-    let stock = unicum_api.get_stock(payload.machine_id).await.map_err(|e| {
-        error!("Unicum API error: {e:?}");
-        StatusCode::INTERNAL_SERVER_ERROR
-    })?;
+    let stock = unicum_api
+        .get_stock(payload.machine_id)
+        .await
+        .map_err(|e| {
+            error!("Unicum API error: {e:?}");
+            StatusCode::INTERNAL_SERVER_ERROR
+        })?;
 
     Ok(Json(stock))
 }
 
-async fn logger(mut req: Request, next: Next) -> Result<Response, StatusCode> {
+async fn logger(req: Request, next: Next) -> Result<Response, StatusCode> {
     let uri = req.uri();
     info!("Got a request for {uri}");
     Ok(next.run(req).await)

@@ -7,13 +7,14 @@ use serde::{Deserialize, Serialize};
 use time::{Duration, OffsetDateTime};
 
 use crate::{
-    contracts::Contracts, entities::{InternalError, MachineId, Sales, SetStockTarget, State, Stock},
+    contracts::Contracts,
+    entities::{InternalError, MachineId, Sales, SetStockTarget, State, Stock},
 };
 
-mod login;
-mod get_state;
 mod get_sales;
+mod get_state;
 mod get_stock;
+mod login;
 mod set_stock;
 mod utils;
 
@@ -105,14 +106,16 @@ impl UnicumApi {
             }
         }
 
-        return Ok(&self.token);
+        Ok(&self.token)
     }
 }
 
 #[async_trait]
 impl Contracts for UnicumApi {
     async fn get_state(&mut self, machine_id: MachineId) -> Result<State, InternalError> {
-        self.get_state_internal(machine_id).await.map_err(|e| e.into())
+        self.get_state_internal(machine_id)
+            .await
+            .map_err(|e| e.into())
     }
 
     async fn get_sales(
@@ -123,14 +126,23 @@ impl Contracts for UnicumApi {
     ) -> Result<Sales, InternalError> {
         let since_date = OffsetDateTime::from_unix_timestamp(since).unwrap().date();
         let until_date = OffsetDateTime::from_unix_timestamp(until).unwrap().date();
-        self.get_sales(machine_id, since_date, until_date).await.map_err(|e| e.into())
+        self.get_sales(machine_id, since_date, until_date)
+            .await
+            .map_err(|e| e.into())
     }
 
     async fn get_stock(&mut self, machine_id: MachineId) -> Result<Stock, InternalError> {
         self.get_stock(machine_id).await.map_err(|e| e.into())
     }
-    async fn set_stock(&mut self, machine_id: MachineId, stock: Stock, target: SetStockTarget) -> Result<(), InternalError> {
-        self.set_stock(machine_id, stock, target).await.map_err(|e| e.into())
+    async fn set_stock(
+        &mut self,
+        machine_id: MachineId,
+        stock: Stock,
+        target: SetStockTarget,
+    ) -> Result<(), InternalError> {
+        self.set_stock(machine_id, stock, target)
+            .await
+            .map_err(|e| e.into())
     }
 }
 

@@ -63,10 +63,9 @@ pub enum SetStockTarget {
 pub struct User {
     pub username: String,
     pub password_hash: String,
-    #[sqlx(try_from = "i32")] 
+    #[sqlx(try_from = "i32")]
     pub permissions: Permissions,
 }
-
 
 bitflags! {
     #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]

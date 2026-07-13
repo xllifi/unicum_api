@@ -1,6 +1,4 @@
-use core::error;
-
-use log::{debug, info, error};
+use log::{error, info};
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 
@@ -36,7 +34,7 @@ impl UnicumApi {
         if let Some(status) = res.as_ref().err().and_then(|x| x.status()) {
             error!("(UnicumApi::try_login) Error with status: {status:?}");
             if status == StatusCode::CONFLICT {
-                return Err(ModuleError::RetryLogin.into());
+                return Err(ModuleError::RetryLogin);
             }
         }
 

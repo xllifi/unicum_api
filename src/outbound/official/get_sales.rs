@@ -13,12 +13,15 @@
 
 use std::collections::HashMap;
 
-use log::{debug, info};
+use log::debug;
 use scraper::{Html, Selector};
 use time::{Date, macros::format_description, parsing::Parsed};
 
 use super::{AddTokenCookie, ModuleError, UnicumApi, utils::parse_next};
-use crate::{entities::{self, MachineId, Sale, Sales, SlotId}, outbound::official::utils::to_digit_next};
+use crate::{
+    entities::{self, MachineId, Sale, Sales, SlotId},
+    outbound::official::utils::to_digit_next,
+};
 
 impl UnicumApi {
     #[allow(non_snake_case)]
@@ -41,7 +44,7 @@ impl UnicumApi {
             return Ok(vec![]);
         }
         let url = self.GET_SALES_ROUTE(machine_id).await?;
-        
+
         let mut req = HashMap::new();
         // Since
         req.insert("day", since.day().to_string());
@@ -71,7 +74,7 @@ impl UnicumApi {
             Selector::parse("tr:not(:first-child, :last-child, :nth-last-child(2))").unwrap();
         let slot_cell_selector = Selector::parse("td:first-child font").unwrap();
         let name_cell_selector = Selector::parse("td:first-child b").unwrap();
-        
+
         let informative_cell_selector =
             Selector::parse("td:not(:first-child, :last-child, :nth-last-child(2))").unwrap();
 
@@ -81,7 +84,9 @@ impl UnicumApi {
             let mut idx_to_date: HashMap<usize, Date> = HashMap::new();
             if let Some(date_row) = table.select(&date_row_selector).next() {
                 debug!("Found dates row!");
-                let description = format_description!("[day padding:zero]/[month padding:zero repr:numerical]/[year padding:zero repr:last_two]");
+                let description = format_description!(
+                    "[day padding:zero]/[month padding:zero repr:numerical]/[year padding:zero repr:last_two]"
+                );
                 for (i, cell) in date_row.select(&informative_cell_selector).enumerate() {
                     let cell_text: String = cell.text().next().unwrap_or("").trim().into();
                     debug!("Parsing date cell {cell_text}");
@@ -90,17 +95,15 @@ impl UnicumApi {
                     }
 
                     let mut parsed = Parsed::new();
-                    parsed.parse_items(cell_text.as_bytes(), description).map_err(|e| {
-                        ModuleError::ParseError {
+                    parsed
+                        .parse_items(cell_text.as_bytes(), description)
+                        .map_err(|e| ModuleError::ParseError {
                             cause: format!("failed to parse {cell_text}: {e}"),
-                        }
-                    })?;
+                        })?;
 
                     parsed.set_year_century(20, false);
-                    let date = Date::try_from(parsed).map_err(|e| {
-                        ModuleError::ParseError {
-                            cause: format!("failed to create date from a Parsed: {e}"),
-                        }
+                    let date = Date::try_from(parsed).map_err(|e| ModuleError::ParseError {
+                        cause: format!("failed to create date from a Parsed: {e}"),
                     })?;
 
                     idx_to_date.insert(i, date);
@@ -126,8 +129,10 @@ impl UnicumApi {
 
                     SlotId { row, col, name }
                 };
-                debug!("Parsing sales row for slot C{}R{} {}", slot_id.col, slot_id.row, slot_id.name);
-
+                debug!(
+                    "Parsing sales row for slot C{}R{} {}",
+                    slot_id.col, slot_id.row, slot_id.name
+                );
 
                 for (i, cell) in row.select(&informative_cell_selector).enumerate() {
                     let cell_text: String =

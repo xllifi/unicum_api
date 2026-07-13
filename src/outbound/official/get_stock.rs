@@ -1,11 +1,11 @@
 // Url: https://online.unicum.ru/n/vmcloading.html?03<hex_machine_bm>
 
-use log::info;
 use scraper::{Html, Selector};
 
 use super::{ModuleError, UnicumApi};
 use crate::{
-    entities::{MachineId, Stock, StockSlot}, outbound::official::{
+    entities::{MachineId, Stock, StockSlot},
+    outbound::official::{
         AddTokenCookie,
         utils::{parse_err, sel_to_row_and_col},
     },
@@ -17,10 +17,7 @@ impl UnicumApi {
         format!("https://online.unicum.ru/n/vmcloading.html?03{hex_bookmark}")
     }
 
-    pub(super) async fn get_stock(
-        &mut self,
-        machine_id: MachineId,
-    ) -> Result<Stock, ModuleError> {
+    pub(super) async fn get_stock(&mut self, machine_id: MachineId) -> Result<Stock, ModuleError> {
         let hex_bookmark = self.get_hex_machine_bm(machine_id).await?;
 
         let url = self.GET_STOCK_ROUTE(hex_bookmark);
@@ -57,12 +54,14 @@ impl UnicumApi {
                 .ok_or(parse_err("Failed to find input element"))?;
 
             let mapped_to = input
-                .value().attr("name")
+                .value()
+                .attr("name")
                 .ok_or(parse_err("Failed to find name on input element"))?
                 .to_string();
 
             let cur: u8 = input
-                .value().attr("value")
+                .value()
+                .attr("value")
                 .ok_or(parse_err("Failed to find value on input element"))?
                 .parse()
                 .map_err(|e| parse_err(format!("Failed to parse value of input as u8: {e}")))?;

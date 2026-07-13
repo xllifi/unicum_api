@@ -44,9 +44,7 @@ impl UnicumApi {
             error!("Bad status: {}", res.status().as_str())
         }
 
-        let body = res
-            .text()
-            .await?;
+        let body = res.text().await?;
 
         debug!("{body}");
 

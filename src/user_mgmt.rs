@@ -1,14 +1,15 @@
-use std::{collections::HashSet, process::exit, sync::Arc};
+use std::process::exit;
 
 use argon2::{Argon2, PasswordHasher, password_hash::SaltString};
-use async_trait::async_trait;
 use axum::{
-    body::Body, extract::{FromRequestParts, Request}, http::request::Parts, middleware::Next, response::{IntoResponse, Response},
+    extract::{FromRequestParts, Request},
+    http::request::Parts,
+    middleware::Next,
+    response::{IntoResponse, Response},
 };
 use base64::Engine;
 use inquire::{Confirm, MultiSelect, Text};
-use log::{debug, error, info, warn};
-use protect_axum::GrantsLayer;
+use log::{error, info, warn};
 use reqwest::{StatusCode, header};
 use sqlx::PgPool;
 
@@ -79,12 +80,14 @@ pub async fn useradd(username: Option<String>, pool: PgPool) {
         info!("Cancelled.");
         exit(0);
     } else {
-        let result = sqlx::query("INSERT INTO users (username, password_hash, permissions) VALUES ($1, $2, $3)")
-            .bind(username)
-            .bind(password_hash)
-            .bind(i32::from(permissions))
-            .fetch_all(&pool)
-            .await;
+        let result = sqlx::query(
+            "INSERT INTO users (username, password_hash, permissions) VALUES ($1, $2, $3)",
+        )
+        .bind(username)
+        .bind(password_hash)
+        .bind(i32::from(permissions))
+        .fetch_all(&pool)
+        .await;
         match result {
             Ok(_) => info!("User added succesfully!"),
             Err(e) => error!("Failed to add user: {e}"),
@@ -168,11 +171,11 @@ pub async fn require_auth(mut req: Request, next: Next) -> Result<Response, Stat
 
     let unbase64 = base64::prelude::BASE64_STANDARD
         .decode(auth_header)
-        .map(|x| String::from_utf8(x))
+        .map(String::from_utf8)
         .map_err(|e| bad_request!("Failed to decode base64 auth header {auth_header}: {e}"))?
         .map_err(|e| bad_request!("Failed to decode auth header bytes to string: {e}"))?;
     let split = unbase64.split(':').collect::<Vec<_>>();
-    let username = split.get(0);
+    let username = split.first();
     let username = match username {
         Some(v) => v,
         None => return Err(bad_request!("Couldn't find username in {split:?}")),

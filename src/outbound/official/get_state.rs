@@ -1,7 +1,10 @@
 use serde::{Deserialize, Serialize};
 
 use super::{AddTokenCookie, ModuleError, UnicumApi, User, utils::to_digit_next};
-use crate::{entities::{MachineId, Slot, SlotId, State}, outbound::official::internal::product::Product};
+use crate::{
+    entities::{MachineId, Slot, SlotId, State},
+    outbound::official::internal::product::Product,
+};
 
 static CURSTATE_ROUTE: &str = "https://online.unicum.ru/wjson/curstate.json";
 
@@ -17,7 +20,10 @@ struct CurstateResponse {
 }
 
 impl UnicumApi {
-    pub(super) async fn get_state_internal(&mut self, machine_id: MachineId) -> Result<State, ModuleError> {
+    pub(super) async fn get_state_internal(
+        &mut self,
+        machine_id: MachineId,
+    ) -> Result<State, ModuleError> {
         let req = CurstateRequest {
             machineguid: machine_id.to_string(),
         };
@@ -64,6 +70,6 @@ impl UnicumApi {
             })
             .collect();
 
-        return Ok(vec);
+        Ok(vec)
     }
 }

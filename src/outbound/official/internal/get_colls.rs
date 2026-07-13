@@ -64,11 +64,13 @@ impl UnicumApi {
         self.update_token(res.user.token);
 
         trace!("Decoding machine bm from base64..");
-        let unbase64 = base64::prelude::BASE64_STANDARD.decode(res.bookmark).unwrap();
+        let unbase64 = base64::prelude::BASE64_STANDARD
+            .decode(res.bookmark)
+            .unwrap();
         let hex: String = unbase64.iter().map(|b| format!("{:02X}", b)).collect();
         Ok(EncashmentsAndBookmark {
             hex_bookmark: hex,
-            encashments: res.encashments
+            encashments: res.encashments,
         })
     }
 }

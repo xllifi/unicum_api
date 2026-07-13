@@ -7,11 +7,10 @@
 
 use std::collections::HashMap;
 
-use log::info;
-
 use super::{ModuleError, UnicumApi};
 use crate::{
-    entities::{MachineId, SetStockTarget, Stock}, outbound::official::{AddTokenCookie, utils::parse_err},
+    entities::{MachineId, SetStockTarget, Stock},
+    outbound::official::{AddTokenCookie, utils::parse_err},
 };
 
 impl UnicumApi {
@@ -33,7 +32,7 @@ impl UnicumApi {
         #[rustfmt::skip]
         let encashment_id = match target {
             SetStockTarget::Latest => result.encashments.first()
-                .ok_or(parse_err(format!("No enchasments found! Use future target.")))?
+                .ok_or(parse_err("No enchasments found! Use future target.".to_string()))?
                 .id.clone(),
             SetStockTarget::Future => "T".into(),
         };
@@ -45,8 +44,7 @@ impl UnicumApi {
         req.insert("m".into(), encashment_id);
         req.insert("a".into(), String::new());
 
-        self
-            .http_client
+        self.http_client
             .post(url)
             .form(&req)
             .add_token_cookie(self.token().await?.into())
