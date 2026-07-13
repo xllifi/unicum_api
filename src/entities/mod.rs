@@ -7,19 +7,35 @@ use uuid::Uuid;
 
 pub type MachineId = Uuid;
 
-pub type State = Vec<Slot>;
-pub type Sales = Vec<Sale>;
+pub type MachineState = Vec<MachineStateEntry>;
+pub type MachineSales = Vec<MachineSalesEntry>;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SlotId {
+pub struct Machine {
+    pub guid: Uuid,
+    pub comment: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Product {
     pub row: u8,
     pub col: u8,
     pub name: String,
 }
 
+impl Product {
+    pub fn new(row: u8, col: u8, name: impl Into<String>) -> Self {
+        Self {
+            row,
+            col,
+            name: name.into(),
+        }
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Slot {
-    pub id: SlotId,
+pub struct MachineStateEntry {
+    pub id: Product,
     pub price: f32,
 
     /// How many items can be in this slot
@@ -29,9 +45,9 @@ pub struct Slot {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Sale {
+pub struct MachineSalesEntry {
     pub date: Date,
-    pub slot_id: SlotId,
+    pub product: Product,
     /// Slot's price at the time of sale
     pub price: f32,
 }
@@ -43,10 +59,10 @@ pub struct Date {
     pub year: i32,
 }
 
-pub type Stock = Vec<StockSlot>;
+pub type MachineStock = Vec<StockEntry>;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct StockSlot {
+pub struct StockEntry {
     pub row: u8,
     pub col: u8,
     pub mapped_to: String,
@@ -54,7 +70,7 @@ pub struct StockSlot {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub enum SetStockTarget {
+pub enum SetStockForWhichEncashment {
     Latest,
     Future,
 }
@@ -70,10 +86,10 @@ pub struct User {
 bitflags! {
     #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
     pub struct Permissions: u32 {
-        const STOCK_READ  = 0b0000_0001;
-        const STOCK_WRITE = 0b0000_0010;
-        const STATE_READ  = 0b0000_0100;
-        const SALES_READ  = 0b0000_1000;
+        const STOCK_READ    = 0b0000_0001;
+        const STOCK_WRITE   = 0b0000_0010;
+        const UNUSED        = 0b0000_0100;
+        const SALES_READ    = 0b0000_1000;
     }
 }
 
@@ -95,17 +111,4 @@ impl From<Permissions> for i32 {
     fn from(value: Permissions) -> Self {
         value.bits() as i32
     }
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub enum InternalError {
-    NetworkError { cause: String },
-    ParseError { cause: String },
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-#[serde(tag = "kind", rename_all = "snake_case")]
-pub enum FrontFacingError {
-    NoCredentials,
-    InvadlidCredentials,
 }
