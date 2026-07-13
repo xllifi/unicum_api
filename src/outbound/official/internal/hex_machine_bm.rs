@@ -1,10 +1,10 @@
 use base64::Engine;
-use log::trace;
+use log::{debug, error, trace};
 use serde::{Deserialize, Serialize};
 
 use crate::{
     entities::MachineId,
-    impls::unicum_api::{AddTokenCookie, ModuleError, UnicumApi, User},
+    outbound::official::{AddTokenCookie, ModuleError, UnicumApi, User},
 };
 
 static GET_MACHINE_ROUTE: &str = "https://online.unicum.ru/wjson/getmachine.json";
@@ -30,15 +30,27 @@ impl UnicumApi {
         let req = GetMachineRequest {
             machineguid: machine_id.to_string(),
         };
-        let res: GetMachineResponse = self
+        let token = self.token().await?.into();
+        debug!("Sending request {req:?} to {GET_MACHINE_ROUTE} with token {token}");
+        let res = self
             .http_client
             .post(GET_MACHINE_ROUTE)
             .json(&req)
-            .add_token_cookie(self.token().await?.into())
+            .add_token_cookie(token)
             .send()
-            .await?
-            .json()
             .await?;
+
+        if !res.status().is_success() {
+            error!("Bad status: {}", res.status().as_str())
+        }
+
+        let body = res
+            .text()
+            .await?;
+
+        debug!("{body}");
+
+        let res: GetMachineResponse = serde_json::from_str(&body)?;
 
         self.update_token(res.user.token);
 

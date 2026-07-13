@@ -18,7 +18,7 @@ use scraper::{Html, Selector};
 use time::{Date, macros::format_description, parsing::Parsed};
 
 use super::{AddTokenCookie, ModuleError, UnicumApi, utils::parse_next};
-use crate::{entities::{self, MachineId, Sale, Sales, SlotId}, impls::unicum_api::utils::to_digit_next};
+use crate::{entities::{self, MachineId, Sale, Sales, SlotId}, outbound::official::utils::to_digit_next};
 
 impl UnicumApi {
     #[allow(non_snake_case)]
@@ -61,8 +61,6 @@ impl UnicumApi {
             .await?
             .text()
             .await?;
-
-        info!("{document}");
 
         let html = Html::parse_document(&document);
 

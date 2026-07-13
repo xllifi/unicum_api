@@ -5,7 +5,7 @@ use std::{
 
 use log::trace;
 
-use crate::{entities, impls::unicum_api::ModuleError};
+use crate::{entities, outbound::official::ModuleError};
 
 /// A trait to temporarily view a type as a string slice without allocating.
 pub trait AsStrRef {

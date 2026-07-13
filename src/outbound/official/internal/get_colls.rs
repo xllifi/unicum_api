@@ -5,7 +5,7 @@ use time::OffsetDateTime;
 
 use crate::{
     entities::MachineId,
-    impls::unicum_api::{AddTokenCookie, ModuleError, UnicumApi, User},
+    outbound::official::{AddTokenCookie, ModuleError, UnicumApi, User},
 };
 
 static COLL_LIST_ROUTE: &str = "https://online.unicum.ru/wjson/coll_list.json";

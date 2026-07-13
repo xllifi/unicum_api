@@ -1,7 +1,10 @@
+use core::error;
+
+use log::{debug, info, error};
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 
-use crate::impls::unicum_api::{ModuleError, UnicumApi};
+use crate::outbound::official::{ModuleError, UnicumApi};
 
 static LOGIN_ROUTE: &str = "https://online.unicum.ru/wjson/iamrobot.json";
 
@@ -23,6 +26,7 @@ impl UnicumApi {
             username: &self.username,
             password: &self.password,
         };
+        info!("Authenticating with Unicum as {}", req.username);
         #[rustfmt::skip]
         let res = self.http_client
             .post(LOGIN_ROUTE)
@@ -30,7 +34,7 @@ impl UnicumApi {
             .send().await;
 
         if let Some(status) = res.as_ref().err().and_then(|x| x.status()) {
-            println!("(UnicumApi::try_login) Error with status: {status:?}");
+            error!("(UnicumApi::try_login) Error with status: {status:?}");
             if status == StatusCode::CONFLICT {
                 return Err(ModuleError::RetryLogin.into());
             }

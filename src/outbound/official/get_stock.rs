@@ -5,7 +5,7 @@ use scraper::{Html, Selector};
 
 use super::{ModuleError, UnicumApi};
 use crate::{
-    entities::{MachineId, Stock, StockSlot}, impls::unicum_api::{
+    entities::{MachineId, Stock, StockSlot}, outbound::official::{
         AddTokenCookie,
         utils::{parse_err, sel_to_row_and_col},
     },
@@ -22,7 +22,6 @@ impl UnicumApi {
         machine_id: MachineId,
     ) -> Result<Stock, ModuleError> {
         let hex_bookmark = self.get_hex_machine_bm(machine_id).await?;
-        info!("{hex_bookmark}");
 
         let url = self.GET_STOCK_ROUTE(hex_bookmark);
 
@@ -34,8 +33,6 @@ impl UnicumApi {
             .await?
             .text()
             .await?;
-
-        info!("{document}");
 
         // Parse the HTML document
         let html = Html::parse_document(&document);

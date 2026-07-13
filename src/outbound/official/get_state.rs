@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use super::{AddTokenCookie, ModuleError, UnicumApi, User, utils::to_digit_next};
-use crate::{entities::{MachineId, Slot, SlotId, State}, impls::unicum_api::internal::product::Product};
+use crate::{entities::{MachineId, Slot, SlotId, State}, outbound::official::internal::product::Product};
 
 static CURSTATE_ROUTE: &str = "https://online.unicum.ru/wjson/curstate.json";
 
@@ -17,7 +17,7 @@ struct CurstateResponse {
 }
 
 impl UnicumApi {
-    pub(super) async fn get_state(&mut self, machine_id: MachineId) -> Result<State, ModuleError> {
+    pub(super) async fn get_state_internal(&mut self, machine_id: MachineId) -> Result<State, ModuleError> {
         let req = CurstateRequest {
             machineguid: machine_id.to_string(),
         };
@@ -28,8 +28,6 @@ impl UnicumApi {
             .json(&req)
             .add_token_cookie(self.token().await?.into())
             .send().await?;
-
-        println!("{:?}", res);
 
         let res_str = res.text().await?;
 
@@ -47,7 +45,6 @@ impl UnicumApi {
                         let mut chars = p.common.selection.chars();
                         let row: u8 = to_digit_next(&mut chars, 16).unwrap() as u8;
                         let col: u8 = to_digit_next(&mut chars, 16).unwrap() as u8;
-                        println!("Mapping {} to row {row} col {col}", p.common.selection);
 
                         let price = p.common.price as f32 / 10.0_f32.powi(p.common.decimal as i32);
 

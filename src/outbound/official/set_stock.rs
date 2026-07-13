@@ -11,7 +11,7 @@ use log::info;
 
 use super::{ModuleError, UnicumApi};
 use crate::{
-    entities::{MachineId, SetStockTarget, Stock}, impls::unicum_api::{AddTokenCookie, utils::parse_err},
+    entities::{MachineId, SetStockTarget, Stock}, outbound::official::{AddTokenCookie, utils::parse_err},
 };
 
 impl UnicumApi {
@@ -44,8 +44,6 @@ impl UnicumApi {
         }
         req.insert("m".into(), encashment_id);
         req.insert("a".into(), String::new());
-
-        info!("{req:?}");
 
         self
             .http_client
