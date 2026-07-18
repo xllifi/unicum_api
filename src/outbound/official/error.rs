@@ -21,13 +21,6 @@ pub(crate) enum ScraperError {
     #[error("Invalid date {value:?}: {cause}")]
     InvalidDate { value: String, cause: String },
 
-    #[error("Sales row for slot {slot:?} has {actual} date cells, expected {expected}")]
-    SalesColumnCountMismatch {
-        slot: String,
-        expected: usize,
-        actual: usize,
-    },
-
     #[error("Invalid sales cell {value:?}: {cause}")]
     InvalidSalesCell { value: String, cause: String },
 

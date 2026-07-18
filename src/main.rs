@@ -18,8 +18,6 @@ mod logging;
 mod outbound;
 mod users;
 
-pub const APP_NAME: &str = "unicum_api";
-
 /// A convenient wrapper for Unicum's API
 #[derive(Parser)]
 #[command(name = "unicum_api")]
@@ -64,10 +62,6 @@ async fn main() {
     }
     if let Err(error) = logging::setup().apply() {
         eprintln!("Failed to initialize logger: {error}");
-        exit(2);
-    }
-    if let Err(error) = config::initialize_state_dir() {
-        error!("Failed to initialize state directory: {error}");
         exit(2);
     }
 
