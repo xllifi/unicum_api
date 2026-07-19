@@ -43,7 +43,7 @@ impl UnicumApi {
         // Update token
         self.update_token(res.user.token);
 
-        let mut slots = Vec::new();
+        let mut state_entries = Vec::new();
         for product in res.products {
             let UpstreamProduct::Snack(product) = product else {
                 continue;
@@ -54,7 +54,7 @@ impl UnicumApi {
             let col = to_digit_next(&mut chars, 16)? as u8;
             let price = product.common.price as f32 / 10.0_f32.powi(product.common.decimal as i32);
 
-            slots.push(MachineStateEntry {
+            state_entries.push(MachineStateEntry {
                 id: Product::new(row, col, product.common.name),
                 price,
                 max: product.common.max,
@@ -62,6 +62,10 @@ impl UnicumApi {
             });
         }
 
-        Ok(slots)
+        state_entries.sort_by(|a, b| {
+            a.id.row.cmp(&b.id.row).then(a.id.col.cmp(&b.id.col))
+        });
+
+        Ok(state_entries)
     }
 }
