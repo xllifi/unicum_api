@@ -6,10 +6,8 @@ use scraper::{ElementRef, Html, Selector};
 use time::{Date, Month};
 
 use crate::{
-    entities::{MachineId, MachineSales, MachineSalesEntry, Product},
-    outbound::official::{
-        ModuleError, RequestBuilderExt, ScraperError, UnicumApi, scraper::to_digit_next,
-        upstream::SALES_ROUTE,
+    entities::{MachineId, MachineSales, MachineSalesEntry, Product}, outbound::official::{
+        ModuleError, RequestBuilderExt, ScraperError, UnicumApi, scraper::{GetText, to_digit_next}, upstream::SALES_ROUTE,
     },
 };
 
@@ -299,15 +297,5 @@ impl<'a> SelectFirst<'a> for ElementRef<'_> {
             .ok_or_else(|| ScraperError::MissingElement {
                 element: element.to_owned(),
             })
-    }
-}
-
-trait GetText {
-    fn text_string(&self) -> String;
-}
-
-impl GetText for ElementRef<'_> {
-    fn text_string(&self) -> String {
-        self.text().collect::<Vec<_>>().join(" ").trim().to_owned()
     }
 }

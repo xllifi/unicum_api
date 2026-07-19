@@ -1,6 +1,7 @@
 use std::str::Chars;
 
 use log::trace;
+use scraper::ElementRef;
 
 use crate::{entities, outbound::official::ScraperError};
 
@@ -52,13 +53,24 @@ impl From<time::Date> for entities::Date {
     }
 }
 
-pub fn sel_to_row_and_col<S: AsRef<str>>(sel: S) -> Result<(u8, u8), ScraperError> {
-    let mut chars = sel.as_ref().chars();
+pub fn coordinate_to_row_and_col<S: AsRef<str>>(coordinate: S) -> Result<(u8, u8), ScraperError> {
+    let mut chars = coordinate.as_ref().chars();
     let row: u8 = to_digit_next(&mut chars, 16)? as u8;
     let col: u8 = to_digit_next(&mut chars, 16)? as u8;
 
     Ok((row, col))
 }
+
+pub trait GetText {
+    fn text_string(&self) -> String;
+}
+
+impl GetText for ElementRef<'_> {
+    fn text_string(&self) -> String {
+        self.text().collect::<Vec<_>>().join(" ").trim().to_owned()
+    }
+}
+
 
 #[cfg(test)]
 mod tests {
@@ -266,7 +278,7 @@ mod tests {
     }
 
     mod sel_to_row_and_col {
-        use crate::outbound::official::{ScraperError, scraper::sel_to_row_and_col};
+        use crate::outbound::official::{ScraperError, scraper::coordinate_to_row_and_col};
 
         #[test]
         fn path_ok_hexadecimal_selection() {
@@ -274,7 +286,7 @@ mod tests {
             let selection = "AF";
 
             // When
-            let result = sel_to_row_and_col(selection);
+            let result = coordinate_to_row_and_col(selection);
 
             // Then
             assert!(result.is_ok());
@@ -287,7 +299,7 @@ mod tests {
             let selection = "12extra";
 
             // When
-            let result = sel_to_row_and_col(selection);
+            let result = coordinate_to_row_and_col(selection);
 
             // Then
             assert!(result.is_ok());
@@ -300,7 +312,7 @@ mod tests {
             let selection = "";
 
             // When
-            let result = sel_to_row_and_col(selection);
+            let result = coordinate_to_row_and_col(selection);
 
             // Then
             assert!(result.is_err());
@@ -318,7 +330,7 @@ mod tests {
             let selection = "A";
 
             // When
-            let result = sel_to_row_and_col(selection);
+            let result = coordinate_to_row_and_col(selection);
 
             // Then
             assert!(result.is_err());
@@ -336,7 +348,7 @@ mod tests {
             let selection = "G1";
 
             // When
-            let result = sel_to_row_and_col(selection);
+            let result = coordinate_to_row_and_col(selection);
 
             // Then
             assert!(result.is_err());
@@ -355,7 +367,7 @@ mod tests {
             let selection = "1G";
 
             // When
-            let result = sel_to_row_and_col(selection);
+            let result = coordinate_to_row_and_col(selection);
 
             // Then
             assert!(result.is_err());

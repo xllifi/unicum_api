@@ -1,0 +1,11 @@
+.git
+.gitignore
+.env
+.env.*
+target
+state
+.sqlx
+Dockerfile*
+compose*.yml
+compose*.yaml
+README*

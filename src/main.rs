@@ -52,6 +52,11 @@ enum Commands {
 
 #[tokio::main]
 async fn main() {
+    if let Err(error) = logging::setup().apply() {
+        eprintln!("Failed to initialize logger: {error}");
+        exit(2);
+    }
+
     if let Err(error) = dotenvy::dotenv() {
         if error.not_found() {
             info!("No .env file found; using process environment");
@@ -59,10 +64,6 @@ async fn main() {
             error!("Failed to load .env file: {error}");
             exit(2);
         }
-    }
-    if let Err(error) = logging::setup().apply() {
-        eprintln!("Failed to initialize logger: {error}");
-        exit(2);
     }
 
     let cli = Cli::parse();

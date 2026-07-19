@@ -7,6 +7,8 @@
 
 use std::collections::HashMap;
 
+use log::debug;
+
 use crate::entities::{MachineId, MachineStock, SetStockForWhichEncashment};
 use crate::outbound::official::upstream::STOCK_ROUTE;
 use crate::outbound::official::{ModuleError, RequestBuilderExt, ScraperError, UnicumApi};
@@ -20,7 +22,7 @@ impl UnicumApi {
     ) -> Result<(), ModuleError> {
         let result = self.get_enchasments_and_bm(machine_id, 1).await?;
 
-        let url = STOCK_ROUTE(result.hex_bookmark);
+        let url = STOCK_ROUTE(result.hex_bookmark.clone());
 
         #[rustfmt::skip]
         let encashment_id = match target {
@@ -38,6 +40,8 @@ impl UnicumApi {
         }
         req.insert("m".into(), encashment_id);
         req.insert("a".into(), String::new());
+
+        debug!("Setting stock for bookmark {} with {req:?}", result.hex_bookmark);
 
         let response = self
             .http_client

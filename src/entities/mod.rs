@@ -63,6 +63,7 @@ pub type MachineStock = Vec<StockEntry>;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct StockEntry {
+    pub name: String,
     pub row: u8,
     pub col: u8,
     pub mapped_to: String,
