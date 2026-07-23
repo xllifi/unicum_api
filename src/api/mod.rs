@@ -38,12 +38,12 @@ impl AppState {
 
 pub fn router(state: AppState) -> Router {
     Router::new()
-        .route("/get_machines", get(machines::get).post(machines::get))
-        .route("/get_state", post(state::get))
         .route("/get_sales", post(sales::get))
         .route("/get_stock", post(stock::get))
         .route("/set_stock", post(stock::set))
         .layer(middleware::from_fn_with_state(state.clone(), require_auth))
+        .route("/get_machines", get(machines::get).post(machines::get))
+        .route("/get_state", post(state::get))
         .layer(middleware::from_fn(request_logger))
         .with_state(state)
 }
